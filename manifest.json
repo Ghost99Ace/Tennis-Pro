@@ -1,0 +1,29 @@
+{
+  "name": "Tennis Pro — Arcade Edition",
+  "short_name": "Tennis Pro",
+  "description": "Full-featured arcade tennis with 16 characters, 10 courts, career mode, daily challenges and touch controls",
+  "start_url": "./index.html",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#04050a",
+  "theme_color": "#04050a",
+  "scope": "./",
+  "lang": "en",
+  "categories": ["games", "sports"],
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "prefer_related_applications": false
+}
