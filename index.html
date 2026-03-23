@@ -250,110 +250,192 @@ input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;heigh
 #tourn-info{position:fixed;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Bebas Neue',sans-serif;font-size:21px;letter-spacing:4px;color:rgba(212,184,0,.82);pointer-events:none;z-index:35;display:none;text-align:center;}
 #ctrl-hint{position:fixed;bottom:16px;left:50%;transform:translateX(-50%);font-family:'Share Tech Mono',monospace;font-size:8px;color:rgba(255,255,255,.12);letter-spacing:3px;pointer-events:none;z-index:15;display:none;white-space:nowrap;}
 
-/* ═══ MOBILE TOUCH CONTROLS ═══ */
+/* ═══ MOBILE TOUCH CONTROLS — UPGRADED ═══ */
 body { touch-action: none; -webkit-touch-callout: none; }
 canvas { touch-action: none; }
-
-/* Touch control panels - shown only on touch devices */
 #touch-controls { display:none; position:fixed; inset:0; z-index:18; pointer-events:none; }
 
-/* === LANDSCAPE SINGLE PLAYER === */
-.tc-p1-zone {
-  position:absolute; left:0; top:0; width:42%; height:100%;
-  pointer-events:all; touch-action:none;
-}
-.tc-p2-zone {
-  position:absolute; right:0; top:0; width:42%; height:100%;
-  pointer-events:all; touch-action:none;
-}
+/* ── COURT SCALING WRAPPER ── */
+#canvas-wrap { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; }
 
-/* Joystick */
-.tc-joystick-base {
-  position:absolute; width:110px; height:110px; border-radius:50%;
-  background:rgba(255,255,255,.05); border:2px solid rgba(255,255,255,.1);
-  bottom:80px; left:50%; transform:translateX(-50%);
+/* ── JOYSTICK — positioned at BOTTOM CORNER so hand doesn't cover court ── */
+.tc-joy-outer {
+  position:absolute;
+  width:130px; height:130px; border-radius:50%;
+  background:rgba(255,255,255,.04);
+  border:2px solid rgba(255,255,255,.12);
   display:flex; align-items:center; justify-content:center;
+  transition:border-color .15s;
 }
-.tc-joystick-knob {
-  width:44px; height:44px; border-radius:50%;
-  background:rgba(255,255,255,.25); border:2px solid rgba(255,255,255,.4);
-  position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
-  transition:transform .05s;
+.tc-joy-outer.active { border-color:rgba(11,184,204,.5); background:rgba(11,184,204,.06); }
+.tc-joy-knob {
+  width:52px; height:52px; border-radius:50%;
+  background:radial-gradient(circle at 35% 35%, rgba(255,255,255,.45), rgba(255,255,255,.15));
+  border:2px solid rgba(255,255,255,.5);
+  position:absolute; top:50%; left:50%;
+  transform:translate(-50%,-50%);
+  box-shadow:0 4px 12px rgba(0,0,0,.4);
+  transition:transform .04s;
+  pointer-events:none;
 }
-.tc-serve-btn {
-  position:absolute; bottom:80px; left:50%; transform:translateX(-50%);
-  width:90px; height:90px; border-radius:50%;
-  background:rgba(212,184,0,.18); border:2px solid rgba(212,184,0,.5);
-  color:rgba(212,184,0,.9); font-family:'Bebas Neue',sans-serif;
-  font-size:18px; letter-spacing:2px; display:flex; align-items:center;
-  justify-content:center; pointer-events:all; touch-action:none;
-  text-align:center; line-height:1.2;
-}
-.tc-serve-btn:active { background:rgba(212,184,0,.35); transform:translateX(-50%) scale(.93); }
 
-/* Split 2P layout - LEFT side rotated for P1 */
+/* ── P1 JOYSTICK — bottom LEFT corner ── */
+#tc-joy1-outer {
+  position:absolute; bottom:16px; left:16px;
+}
+
+/* ── SERVE ZONE — RIGHT side swipe up area ── */
+#tc-serve-zone {
+  position:absolute; right:0; top:0; width:45%; height:100%;
+  pointer-events:all; touch-action:none;
+  display:flex; align-items:flex-end; justify-content:center;
+  padding-bottom:20px;
+}
+.tc-serve-indicator {
+  position:absolute; bottom:24px; right:50%; transform:translateX(50%);
+  width:80px; height:80px; border-radius:50%;
+  border:2px solid rgba(212,184,0,.35);
+  background:rgba(212,184,0,.07);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  pointer-events:none;
+}
+.tc-serve-indicator .srv-arrow {
+  font-size:22px; color:rgba(212,184,0,.6);
+  animation:arrowPulse 1.5s ease-in-out infinite;
+}
+.tc-serve-indicator .srv-text {
+  font-family:'Share Tech Mono',monospace; font-size:8px;
+  letter-spacing:2px; color:rgba(212,184,0,.5); margin-top:2px;
+}
+@keyframes arrowPulse{0%,100%{transform:translateY(0);opacity:.6}50%{transform:translateY(-5px);opacity:1}}
+.tc-serve-indicator.served { border-color:rgba(212,184,0,.8); background:rgba(212,184,0,.2); }
+
+/* Swipe trail visual */
+.tc-swipe-trail {
+  position:absolute; width:3px; border-radius:2px;
+  background:linear-gradient(to top, rgba(212,184,0,.8), transparent);
+  pointer-events:none; transform-origin:bottom center;
+}
+
+/* ── SPLIT 2P ── */
 .tc-split-p1 {
   position:absolute; left:0; top:0; width:50%; height:100%;
   pointer-events:all; touch-action:none;
-  border-right:1px solid rgba(255,255,255,.06);
+  border-right:1px solid rgba(255,255,255,.05);
 }
 .tc-split-p2 {
   position:absolute; right:0; top:0; width:50%; height:100%;
   pointer-events:all; touch-action:none;
 }
-
-/* Joystick container inside split zone */
-.tc-joy-wrap {
-  position:absolute; bottom:70px; left:50%; transform:translateX(-50%);
-  width:110px; height:110px;
+#tc-joy2-outer {
+  position:absolute; bottom:16px; right:16px;
 }
-/* P1 zone rotated 90° so P1 holds phone sideways - optional flip */
-.tc-label {
-  position:absolute; top:16px; left:50%; transform:translateX(-50%);
-  font-family:'Share Tech Mono',monospace; font-size:9px; letter-spacing:3px;
-  color:rgba(255,255,255,.2); pointer-events:none;
+.tc-split-serve-p1 {
+  position:absolute; bottom:16px; right:16px;
+  width:60px; height:60px; border-radius:50%;
+  border:1px solid rgba(11,184,204,.4); background:rgba(11,184,204,.08);
+  color:rgba(11,184,204,.8); font-family:'Bebas Neue',sans-serif;
+  font-size:11px; display:flex; align-items:center; justify-content:center;
+  pointer-events:all; touch-action:none; text-align:center; line-height:1.2;
 }
-
-/* Spin arrows overlay */
-.tc-spin-up, .tc-spin-dn {
-  position:absolute; width:44px; height:44px; border-radius:50%;
-  background:rgba(255,255,255,.06); border:1px solid rgba(255,255,255,.12);
-  display:flex; align-items:center; justify-content:center;
-  font-size:18px; pointer-events:all; touch-action:none; color:rgba(255,255,255,.3);
+.tc-split-serve-p2 {
+  position:absolute; bottom:16px; left:16px;
+  width:60px; height:60px; border-radius:50%;
+  border:1px solid rgba(196,35,95,.4); background:rgba(196,35,95,.08);
+  color:rgba(196,35,95,.8); font-family:'Bebas Neue',sans-serif;
+  font-size:11px; display:flex; align-items:center; justify-content:center;
+  pointer-events:all; touch-action:none; text-align:center; line-height:1.2;
 }
-.tc-spin-up { bottom:200px; left:50%; transform:translateX(-50%); }
-.tc-spin-dn { bottom:130px; left:50%; transform:translateX(-50%); }
-
-/* Mobile-aware menu tweaks */
-@media (max-width: 600px) {
-  .menu-tabs { flex-wrap:wrap; gap:2px; }
-  .menu-tab { font-size:9px; padding:7px 10px; letter-spacing:1.5px; }
-  .menu-section { padding:14px 14px 12px; }
-  .mlabel { font-size:8px; letter-spacing:3px; }
-  .mbtn { font-size:10px; padding:8px 14px; }
-  .btn-row { gap:6px; }
-  .title-main { font-size:clamp(40px,14vw,80px); letter-spacing:4px; }
-  .btn-start { font-size:22px; padding:11px 36px; }
-  .char-grid { grid-template-columns:repeat(auto-fill,minmax(85px,1fr)); }
-  .char-avatar { font-size:22px; }
-  .char-name { font-size:8px; }
-}
-@media (max-height: 500px) and (orientation:landscape) {
-  .title-container { margin-bottom:10px; }
-  .title-main { font-size:clamp(32px,7vw,60px); }
-  .ball-deco { font-size:28px; }
-  .menu-section { padding:12px 16px 10px; max-height:55vh; overflow-y:auto; }
+.tc-player-label {
+  position:absolute; top:12px; font-family:'Share Tech Mono',monospace;
+  font-size:9px; letter-spacing:3px; pointer-events:none;
 }
 
-/* Portrait warning overlay */
+/* ── SENSITIVITY PANEL ── */
+#sensitivity-panel {
+  position:fixed; bottom:0; left:0; right:0; z-index:90;
+  background:rgba(4,8,18,.95); border-top:1px solid rgba(255,255,255,.1);
+  padding:14px 20px 20px; display:none; pointer-events:all;
+  backdrop-filter:blur(8px);
+  animation:slideUp .3s ease;
+}
+@keyframes slideUp{from{transform:translateY(100%)}to{transform:translateY(0)}}
+.sens-title { font-family:'Orbitron',monospace; font-size:10px; letter-spacing:3px; color:rgba(11,184,204,.8); margin-bottom:14px; }
+.sens-row { display:flex; align-items:center; gap:12px; margin-bottom:12px; }
+.sens-label { font-size:9px; letter-spacing:2px; color:rgba(255,255,255,.4); width:110px; flex-shrink:0; font-family:'Share Tech Mono',monospace; }
+.sens-slider { flex:1; -webkit-appearance:none; height:4px; background:rgba(255,255,255,.12); border-radius:2px; outline:none; }
+.sens-slider::-webkit-slider-thumb { -webkit-appearance:none; width:20px; height:20px; border-radius:50%; background:rgba(11,184,204,.8); cursor:pointer; }
+.sens-val { font-size:10px; color:rgba(11,184,204,.8); width:28px; text-align:right; font-family:'Share Tech Mono',monospace; }
+.sens-close { display:block; width:100%; margin-top:6px; font-family:'Orbitron',monospace; font-size:10px; letter-spacing:3px; padding:10px; border:1px solid rgba(255,255,255,.15); color:rgba(255,255,255,.4); background:transparent; cursor:pointer; border-radius:2px; pointer-events:all; }
+
+/* ── SENSITIVITY BUTTON in HUD ── */
+#sens-btn {
+  position:fixed; bottom:80px; right:16px; display:none;
+  font-family:'Orbitron',monospace; font-size:9px; letter-spacing:1px;
+  padding:6px 10px; border:1px solid rgba(255,255,255,.14);
+  color:rgba(255,255,255,.28); background:rgba(0,0,0,.45);
+  cursor:pointer; pointer-events:all; z-index:25; border-radius:2px;
+}
+
+/* ── LOCAL 2-PHONE CONNECTION ── */
+#local-connect-overlay {
+  position:fixed; inset:0; background:rgba(0,0,0,.92);
+  display:none; align-items:center; justify-content:center;
+  z-index:95; pointer-events:all; backdrop-filter:blur(8px);
+  flex-direction:column; padding:24px; text-align:center;
+}
+.lc-title { font-family:'Bebas Neue',sans-serif; font-size:clamp(28px,6vw,56px); color:rgba(11,184,204,.85); letter-spacing:6px; margin-bottom:6px; }
+.lc-sub { font-size:9px; letter-spacing:3px; color:rgba(255,255,255,.3); margin-bottom:24px; }
+.lc-card { border:1px solid rgba(11,184,204,.2); background:rgba(4,8,18,.9); padding:20px 24px; border-radius:4px; width:100%; max-width:360px; margin-bottom:14px; }
+.lc-role-btn { font-family:'Orbitron',monospace; font-size:13px; letter-spacing:3px; padding:14px 28px; border:1px solid; cursor:pointer; background:rgba(0,0,0,.3); text-transform:uppercase; transition:all .2s; border-radius:2px; display:block; width:100%; margin-bottom:10px; pointer-events:all; }
+.lc-host { border-color:rgba(212,184,0,.45); color:rgba(212,184,0,.85); }
+.lc-host:hover { background:rgba(212,184,0,.12); }
+.lc-join { border-color:rgba(40,199,10,.4); color:rgba(40,199,10,.8); }
+.lc-join:hover { background:rgba(40,199,10,.1); }
+.lc-back { border-color:rgba(255,255,255,.18); color:rgba(255,255,255,.38); }
+.lc-back:hover { border-color:rgba(255,255,255,.4); color:rgba(255,255,255,.65); }
+.lc-status { font-family:'Share Tech Mono',monospace; font-size:11px; color:rgba(255,255,255,.5); letter-spacing:2px; margin:12px 0; line-height:1.8; }
+.lc-code-box { font-family:'Bebas Neue',sans-serif; font-size:48px; letter-spacing:10px; color:rgba(212,184,0,.9); text-shadow:0 0 20px rgba(212,184,0,.4); margin:12px 0; }
+.lc-input { font-family:'Orbitron',monospace; font-size:20px; letter-spacing:6px; text-align:center; background:rgba(0,0,0,.4); border:1px solid rgba(11,184,204,.3); color:white; padding:12px; width:100%; border-radius:2px; pointer-events:all; text-transform:uppercase; }
+.lc-qr { width:160px; height:160px; background:white; margin:12px auto; border-radius:4px; display:flex; align-items:center; justify-content:center; }
+
+/* ── PINCH ZOOM indicator ── */
+#zoom-indicator {
+  position:fixed; top:50%; left:50%; transform:translate(-50%,-50%);
+  font-family:'Share Tech Mono',monospace; font-size:12px; letter-spacing:3px;
+  color:rgba(255,255,255,.5); background:rgba(0,0,0,.6); padding:6px 14px;
+  border-radius:20px; pointer-events:none; z-index:38; opacity:0; transition:opacity .3s;
+}
+
+/* ── PORTRAIT WARNING ── */
 #portrait-hint {
   display:none; position:fixed; inset:0; background:rgba(0,0,0,.92);
   z-index:500; align-items:center; justify-content:center; flex-direction:column;
-  text-align:center; padding:30px;
+  text-align:center; padding:30px; pointer-events:none;
 }
 #portrait-hint .ph-icon { font-size:60px; margin-bottom:16px; animation:rotatePH 2s ease-in-out infinite; }
-@keyframes rotatePH { 0%,100%{transform:rotate(0deg)} 40%{transform:rotate(90deg)} 60%{transform:rotate(90deg)} }
-#portrait-hint .ph-text { font-family:'Orbitron',monospace; font-size:13px; letter-spacing:3px; color:rgba(255,255,255,.6); line-height:1.8; }
+@keyframes rotatePH{0%,100%{transform:rotate(0deg)}40%{transform:rotate(90deg)}60%{transform:rotate(90deg)}}
+#portrait-hint .ph-text { font-family:'Orbitron',monospace; font-size:13px; letter-spacing:3px; color:rgba(255,255,255,.55); line-height:1.8; }
+
+/* Mobile menu tweaks */
+@media (max-width:600px) {
+  .menu-tabs{flex-wrap:wrap;gap:2px;}
+  .menu-tab{font-size:9px;padding:7px 9px;letter-spacing:1.5px;}
+  .menu-section{padding:14px 14px 12px;}
+  .mlabel{font-size:8px;letter-spacing:3px;}
+  .mbtn{font-size:10px;padding:8px 12px;}
+  .btn-row{gap:6px;}
+  .title-main{font-size:clamp(38px,13vw,76px);letter-spacing:4px;}
+  .btn-start{font-size:22px;padding:11px 34px;}
+  .char-grid{grid-template-columns:repeat(auto-fill,minmax(82px,1fr));}
+  .char-avatar{font-size:22px;}
+  .char-name{font-size:8px;}
+}
+@media (max-height:500px) and (orientation:landscape){
+  .title-main{font-size:clamp(28px,6vw,52px);}
+  .ball-deco{font-size:26px;}
+  .menu-section{max-height:52vh;overflow-y:auto;}
+}
 
 /* ── DAILY CHALLENGE ── */
 #daily-screen{position:fixed;inset:0;background:radial-gradient(ellipse at 50% 20%,#0a1a0a,#000);display:none;flex-direction:column;align-items:center;justify-content:center;z-index:96;overflow:hidden;}
@@ -412,6 +494,7 @@ canvas { touch-action: none; }
           <button class="mbtn bmode active" data-mode="1p" onclick="selectMode('1p',this)">1 PLAYER</button>
           <button class="mbtn bmode" data-mode="2p" onclick="selectMode('2p',this)">2 PLAYERS</button>
           <button class="mbtn bmode" data-mode="tournament" onclick="selectMode('tournament',this)">TOURNAMENT</button>
+          <button class="mbtn" style="border-color:rgba(212,184,0,.4);color:rgba(212,184,0,.8);" onclick="openLocalConnect()">📡 LOCAL 2-PHONE</button>
         </div>
         <div class="mlabel" id="diff-label">▸ CPU DIFFICULTY</div>
         <div class="btn-row" id="diff-row">
@@ -475,6 +558,36 @@ canvas { touch-action: none; }
         <div class="trow">
           <span class="tlabel">POWER-UPS</span>
           <button class="tbtn on" id="powerupsToggle" onclick="togglePowerupsSetting()">ON</button>
+        </div>
+
+        <!-- TOUCH SENSITIVITY — visible always so you can adjust before playing -->
+        <div style="margin-top:18px;padding-top:14px;border-top:1px solid rgba(255,255,255,.07);">
+          <div class="mlabel" style="margin-top:0;">▸ TOUCH SENSITIVITY</div>
+
+          <div class="sens-row" style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+            <span class="sens-label" style="font-size:9px;letter-spacing:2px;color:rgba(255,255,255,.4);width:100px;flex-shrink:0;font-family:'Share Tech Mono',monospace;">MOVE SPEED</span>
+            <input type="range" class="sens-slider" id="sens-move" min="1" max="10" value="5" oninput="updateSensitivity()" style="flex:1;pointer-events:all;">
+            <span class="sens-val" id="sens-move-val" style="font-size:10px;color:rgba(11,184,204,.8);width:24px;text-align:right;font-family:'Share Tech Mono',monospace;">5</span>
+          </div>
+
+          <div class="sens-row" style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+            <span class="sens-label" style="font-size:9px;letter-spacing:2px;color:rgba(255,255,255,.4);width:100px;flex-shrink:0;font-family:'Share Tech Mono',monospace;">SPIN STRENGTH</span>
+            <input type="range" class="sens-slider" id="sens-spin" min="1" max="10" value="5" oninput="updateSensitivity()" style="flex:1;pointer-events:all;">
+            <span class="sens-val" id="sens-spin-val" style="font-size:10px;color:rgba(11,184,204,.8);width:24px;text-align:right;font-family:'Share Tech Mono',monospace;">5</span>
+          </div>
+
+          <div class="sens-row" style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+            <span class="sens-label" style="font-size:9px;letter-spacing:2px;color:rgba(255,255,255,.4);width:100px;flex-shrink:0;font-family:'Share Tech Mono',monospace;">JOYSTICK SIZE</span>
+            <input type="range" class="sens-slider" id="sens-size" min="1" max="10" value="5" oninput="updateSensitivity()" style="flex:1;pointer-events:all;">
+            <span class="sens-val" id="sens-size-val" style="font-size:10px;color:rgba(11,184,204,.8);width:24px;text-align:right;font-family:'Share Tech Mono',monospace;">5</span>
+          </div>
+
+          <div class="sens-row" style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">
+            <span class="sens-label" style="font-size:9px;letter-spacing:2px;color:rgba(255,255,255,.4);width:100px;flex-shrink:0;font-family:'Share Tech Mono',monospace;">SWIPE SERVE</span>
+            <input type="range" class="sens-slider" id="sens-serve" min="1" max="10" value="5" oninput="updateSensitivity()" style="flex:1;pointer-events:all;">
+            <span class="sens-val" id="sens-serve-val" style="font-size:10px;color:rgba(11,184,204,.8);width:24px;text-align:right;font-family:'Share Tech Mono',monospace;">5</span>
+          </div>
+          <div style="font-size:8px;color:rgba(255,255,255,.2);letter-spacing:2px;text-align:center;margin-top:8px;font-family:'Share Tech Mono',monospace;">HIGHER = MORE SENSITIVE</div>
         </div>
       </div>
     </div>
@@ -699,38 +812,98 @@ canvas { touch-action: none; }
   <div class="ph-text">ROTATE YOUR DEVICE<br>LANDSCAPE FOR BEST PLAY</div>
 </div>
 
+<!-- ZOOM INDICATOR -->
+<div id="zoom-indicator">🔍 100%</div>
+
+<!-- SENSITIVITY PANEL -->
+<div id="sensitivity-panel">
+  <div class="sens-title">⚙ CONTROL SENSITIVITY</div>
+  <div class="sens-row">
+    <span class="sens-label">MOVE SPEED</span>
+    <input type="range" class="sens-slider" id="sens-move" min="1" max="10" value="5" oninput="updateSensitivity()">
+    <span class="sens-val" id="sens-move-val">5</span>
+  </div>
+  <div class="sens-row">
+    <span class="sens-label">SPIN STRENGTH</span>
+    <input type="range" class="sens-slider" id="sens-spin" min="1" max="10" value="5" oninput="updateSensitivity()">
+    <span class="sens-val" id="sens-spin-val">5</span>
+  </div>
+  <div class="sens-row">
+    <span class="sens-label">JOYSTICK SIZE</span>
+    <input type="range" class="sens-slider" id="sens-size" min="1" max="10" value="5" oninput="updateSensitivity()">
+    <span class="sens-val" id="sens-size-val">5</span>
+  </div>
+  <div class="sens-row">
+    <span class="sens-label">SWIPE SERVE</span>
+    <input type="range" class="sens-slider" id="sens-serve" min="1" max="10" value="5" oninput="updateSensitivity()">
+    <span class="sens-val" id="sens-serve-val">5</span>
+  </div>
+  <button class="sens-close" onclick="closeSensitivityPanel()">✓ SAVE & CLOSE</button>
+</div>
+
+<!-- SENSITIVITY BUTTON -->
+<button id="sens-btn" onclick="openSensitivityPanel()">⚙ CONTROLS</button>
+
+<!-- LOCAL 2-PHONE CONNECTION -->
+<div id="local-connect-overlay">
+  <div class="lc-title">LOCAL MULTIPLAYER</div>
+  <div class="lc-sub">CONNECT TWO PHONES ON SAME WIFI</div>
+  <div class="lc-card" id="lc-choose">
+    <button class="lc-role-btn lc-host" onclick="startAsHost()">📡 HOST GAME</button>
+    <button class="lc-role-btn lc-join" onclick="showJoinScreen()">🔗 JOIN GAME</button>
+    <button class="lc-role-btn lc-back" onclick="closeLocalConnect()">⬅ BACK</button>
+  </div>
+  <div class="lc-card" id="lc-hosting" style="display:none">
+    <div class="lc-status">Share this code with Player 2</div>
+    <div class="lc-code-box" id="lc-host-code">----</div>
+    <div class="lc-status" id="lc-host-status">⏳ Waiting for Player 2...</div>
+    <div id="lc-qr-wrap" class="lc-qr"><canvas id="lc-qr-canvas"></canvas></div>
+    <button class="lc-role-btn lc-back" onclick="cancelHosting()">✕ CANCEL</button>
+  </div>
+  <div class="lc-card" id="lc-joining" style="display:none">
+    <div class="lc-status">Enter the 4-letter code from Host</div>
+    <input class="lc-input" id="lc-join-input" maxlength="4" placeholder="ABCD" autocomplete="off" spellcheck="false">
+    <button class="lc-role-btn lc-join" style="margin-top:12px" onclick="joinGame()">🔗 CONNECT</button>
+    <div class="lc-status" id="lc-join-status"></div>
+    <button class="lc-role-btn lc-back" onclick="cancelJoining()">⬅ BACK</button>
+  </div>
+</div>
+
 <!-- TOUCH CONTROLS -->
 <div id="touch-controls">
+  <!-- Single player layout -->
   <div id="tc-single-layout">
-    <div class="tc-p1-zone" id="tc-p1-zone">
-      <div class="tc-label">SWIPE TO MOVE</div>
-      <div class="tc-joystick-base" id="tc-joy1-base">
-        <div class="tc-joystick-knob" id="tc-joy1-knob"></div>
+    <!-- P1 joystick — bottom left corner, hand stays below court -->
+    <div id="tc-p1-zone" style="position:absolute;left:0;top:0;width:55%;height:100%;pointer-events:all;touch-action:none;">
+      <div class="tc-player-label" style="left:50%;transform:translateX(-50%);color:rgba(11,184,204,.4);">DRAG TO MOVE</div>
+      <div class="tc-joy-outer" id="tc-joy1-outer">
+        <div class="tc-joy-knob" id="tc-joy1-knob"></div>
       </div>
     </div>
-    <div class="tc-p2-zone" id="tc-serve-zone">
-      <div class="tc-label">TAP TO SERVE / SPIN</div>
-      <button class="tc-serve-btn" id="tc-serve-btn">SERVE<br>🎾</button>
+    <!-- Serve zone — right side, swipe UP to serve -->
+    <div id="tc-serve-zone" style="position:absolute;right:0;top:0;width:45%;height:100%;pointer-events:all;touch-action:none;">
+      <div class="tc-player-label" style="right:16px;color:rgba(212,184,0,.35);">SWIPE UP TO SERVE</div>
+      <div class="tc-serve-indicator" id="tc-serve-indicator">
+        <span class="srv-arrow">↑</span>
+        <span class="srv-text">SERVE</span>
+      </div>
     </div>
   </div>
+  <!-- Split 2P layout -->
   <div id="tc-split-layout" style="display:none;position:absolute;inset:0;">
     <div class="tc-split-p1" id="tc-split-p1">
-      <div class="tc-label" style="color:rgba(11,184,204,.5)">P1 ← SWIPE</div>
-      <div style="position:absolute;bottom:70px;left:50%;transform:translateX(-50%);">
-        <div class="tc-joystick-base" style="position:relative;left:0;transform:none;bottom:0;width:100px;height:100px;">
-          <div class="tc-joystick-knob" id="tc-joy-split1-knob"></div>
-        </div>
+      <div class="tc-player-label" style="left:50%;transform:translateX(-50%);color:rgba(11,184,204,.4);">P1 — DRAG</div>
+      <div class="tc-joy-outer" id="tc-joy-sp1" style="position:absolute;bottom:16px;left:16px;">
+        <div class="tc-joy-knob" id="tc-joy-sp1-knob"></div>
       </div>
-      <button class="tc-serve-btn" id="tc-serve-p1-btn" style="position:absolute;bottom:70px;right:12px;left:auto;transform:none;width:68px;height:68px;font-size:13px;">SRV🎾</button>
+      <button class="tc-split-serve-p1" id="tc-srv-p1" ontouchstart="onSplitServe(event,1)">↑<br>SRV</button>
     </div>
     <div class="tc-split-p2" id="tc-split-p2">
-      <div class="tc-label" style="color:rgba(196,35,95,.5)">SWIPE → P2</div>
-      <div style="position:absolute;bottom:70px;left:50%;transform:translateX(-50%);">
-        <div class="tc-joystick-base" style="position:relative;left:0;transform:none;bottom:0;width:100px;height:100px;">
-          <div class="tc-joystick-knob" id="tc-joy-split2-knob"></div>
-        </div>
+      <div class="tc-player-label" style="right:50%;transform:translateX(50%);color:rgba(196,35,95,.4);">P2 — DRAG</div>
+      <div class="tc-joy-outer" id="tc-joy-sp2" style="position:absolute;bottom:16px;right:16px;">
+        <div class="tc-joy-knob" id="tc-joy-sp2-knob"></div>
       </div>
-      <button class="tc-serve-btn" id="tc-serve-p2-btn" style="position:absolute;bottom:70px;left:12px;right:auto;transform:none;width:68px;height:68px;font-size:13px;border-color:rgba(196,35,95,.5);background:rgba(196,35,95,.15);color:rgba(196,35,95,.9);">SRV🎾</button>
+      <button class="tc-split-serve-p2" id="tc-srv-p2" ontouchstart="onSplitServe(event,2)">↑<br>SRV</button>
     </div>
   </div>
 </div>
@@ -1969,8 +2142,18 @@ function showToast(msg) {
 // ═══════════════════════════════════════════════
 function initGame() {
   const canvas=document.getElementById('gameCanvas');
-  canvas.width=window.innerWidth;canvas.height=window.innerHeight;
-  const W=canvas.width,H=canvas.height;
+  const W = window.innerWidth;
+  const H = window.innerHeight;
+  canvas.width = W;
+  canvas.height = H;
+  canvas.style.width = W + 'px';
+  canvas.style.height = H + 'px';
+  canvas.style.transform = `scale(${gameScale})`;
+  canvas.style.transformOrigin = 'center center';
+  canvas.style.display = 'block';
+  canvas.style.position = 'fixed';
+  canvas.style.top = '0';
+  canvas.style.left = '0';
   const padW=W*.012,padH=H*.14,padX=W*.03;
   const c1=CHARACTERS[selectedP1],c2=CHARACTERS[selectedP2];
   G={
@@ -2227,8 +2410,8 @@ function resetBall(scorer=null){
 
 function serve(){
   if(G.rallying)return;
-  const spd=G.W*.007,dir=G.serving===1?1:-1;
-  G.ball.vx=spd*dir;G.ball.vy=(Math.random()-.5)*spd*.8;
+  const spd=G.W*.005,dir=G.serving===1?1:-1;
+  G.ball.vx=spd*dir;G.ball.vy=(Math.random()-.5)*spd*.6;
   G.rallying=true;G.rallyCount=0;
   playHit(1);
   setTimeout(()=>showCommentary(getLine('serve')),450);
@@ -2326,8 +2509,9 @@ function moveBall(dt){
 function hitPaddle(pl){
   const ball=G.ball,pad=G[pl];
   const relY=(ball.y-pad.y)/getEffH(pad),angle=relY*.8;
-  const spd=Math.min(Math.sqrt(ball.vx*ball.vx+ball.vy*ball.vy)*1.04,G.W*.025);
-  const pm=(pad.char.power||7)/7,as=Math.min(spd*(.9+pm*.2),G.W*.026);
+  // Reduced speed growth: 1.01 instead of 1.04, lower max cap
+  const spd=Math.min(Math.sqrt(ball.vx*ball.vx+ball.vy*ball.vy)*1.01,G.W*.018);
+  const pm=(pad.char.power||7)/7,as=Math.min(spd*(.9+pm*.15),G.W*.019);
   if(pl==='p1'){ball.vx=as*Math.cos(angle);ball.vy=as*Math.sin(angle)+pad.spin*2;ball.x=pad.x+pad.w+ball.r+1;}
   else{ball.vx=-as*Math.cos(angle);ball.vy=as*Math.sin(angle)+pad.spin*2;ball.x=pad.x-ball.r-1;}
   const spinM=(pad.char.spin||5)/5;
@@ -2335,6 +2519,7 @@ function hitPaddle(pl){
   G.rallyCount++;G.crowd.excitement=Math.min(1,G.crowd.excitement+.08);
   G.flashTimer=.3;playHit(as/(G.W*.01));
   recordShot(pl);
+  if(touchEnabled) haptic('light');
   spawnParticles(ball.x,ball.y,6);
   spawnCharSpark(ball.x, ball.y, pad.char);
   playCharGrunt(pad.char);
@@ -2345,6 +2530,7 @@ function point(scorer){
   const win=G[scorer],lose=G[scorer==='p1'?'p2':'p1'];
   const rallyLen = G.rallyCount;
   win.score++;G.rallyCount=0;G.crowd.excitement=Math.min(1,G.crowd.excitement+.3);
+  if(touchEnabled) haptic('medium');
   recordPointEnd(scorer, scorer==='p1'?'p2':'p1', rallyLen);
   setTimeout(()=>triggerCrowdChant(win.name, G.crowd.excitement), 600);
   showCommentary(getLine(scorer==='p1'?'pointP1':'pointP2',{P1:win.name,P2:lose.name}));
@@ -2355,7 +2541,7 @@ function point(scorer){
   if(win.score>=4&&win.score-lose.score>=2){
     win.games++;win.score=0;lose.score=0;
     setTimeout(()=>showCommentary(getLine('gameWin',{P1:win.name})),700);
-    if(win.games>=6&&win.games-lose.games>=2){
+    if(win.games>=4&&win.games-lose.games>=2){
       win.sets++;
       G.setHistory.push({p1g:G.p1.games,p2g:G.p2.games,winner:scorer});
       win.setScores.push(win.games);lose.setScores.push(lose.games);
@@ -2364,7 +2550,7 @@ function point(scorer){
         showCommentary(getLine('setWin',{P1:win.name}));
         showCelebration(win);
       },600);
-      if(win.sets>=2)gameOver=true;
+      if(win.sets>=1)gameOver=true;
     }
   }
   if(gameOver)setTimeout(()=>showGameOver(scorer),3200);
@@ -2839,51 +3025,449 @@ window.addEventListener('resize',()=>{
 });
 
 // ═══════════════════════════════════════════════
-//  MOBILE TOUCH CONTROL ENGINE
+//  MOBILE TOUCH ENGINE — UPGRADED
 // ═══════════════════════════════════════════════
 const isTouchDevice = () => ('ontouchstart' in window) || navigator.maxTouchPoints > 0;
 let touchEnabled = false;
-let tcMode = 'single'; // 'single' | 'split'
+let tcMode = 'single';
 
-// Touch state per player
+// Sensitivity settings (1-10 scale)
+let sensitivity = { move:5, spin:5, size:5, serve:5 };
+
+// Touch state
 const touchState = {
-  p1: { dy:0, spin:0, active:false, touchId:null, startY:0, startX:0 },
-  p2: { dy:0, spin:0, active:false, touchId:null, startY:0, startX:0 },
+  p1:{ dy:0, spin:0, active:false, tid:null, startY:0, startX:0, curY:0, curX:0 },
+  p2:{ dy:0, spin:0, active:false, tid:null, startY:0, startX:0, curY:0, curX:0 },
 };
 
-// Joystick visual knob positions
-const joyPos = { p1:{x:0,y:0}, p2:{x:0,y:0} };
-const JOY_MAX = 42; // max knob travel px
+// Pinch zoom state
+let pinchState = { active:false, startDist:0, currentScale:1, baseScale:1 };
+let gameScale = 1;
+
+// Haptic helper
+function haptic(type='light') {
+  if (!navigator.vibrate) return;
+  const patterns = { light:20, medium:40, heavy:80, double:[30,50,30], score:[50,30,80] };
+  navigator.vibrate(patterns[type] || 20);
+}
 
 function initTouchControls() {
   if (!isTouchDevice()) return;
   touchEnabled = true;
+
+  // Show touch UI elements
   document.getElementById('touch-controls').style.display = 'block';
+  document.getElementById('sens-btn').style.display = 'block';
   document.getElementById('ctrl-hint').style.display = 'none';
-  setupJoystick('p1','tc-p1-zone','tc-joy1-knob');
-  setupServeButton('tc-serve-btn', null);
+
+  // Set up all joysticks
+  setupAdvancedJoystick('p1','tc-p1-zone','tc-joy1-knob');
+  setupSwipeServe();
   setupSplitControls();
+  setupPinchZoom();
+  applyJoystickSize();
+
   checkOrientation();
-  window.addEventListener('orientationchange', ()=>setTimeout(checkOrientation,300));
+  window.addEventListener('orientationchange', ()=>setTimeout(checkOrientation, 300));
   window.addEventListener('resize', checkOrientation);
+}
+
+// ── JOYSTICK SIZE from sensitivity ──
+function applyJoystickSize() {
+  const baseSize = 90 + sensitivity.size * 12; // 102px to 210px
+  document.querySelectorAll('.tc-joy-outer').forEach(el => {
+    el.style.width = baseSize + 'px';
+    el.style.height = baseSize + 'px';
+  });
+}
+
+// ── ADVANCED JOYSTICK ──
+function setupAdvancedJoystick(player, zoneId, knobId) {
+  const zone = document.getElementById(zoneId);
+  const knob = document.getElementById(knobId);
+  const outer = zone.querySelector('.tc-joy-outer') || document.getElementById('tc-joy1-outer');
+  if (!zone) return;
+
+  const ts = touchState[player];
+  let joyBaseX = 0, joyBaseY = 0;
+
+  zone.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    if (ts.tid !== null) return;
+    // Skip if touching serve zone element
+    if (e.target.classList.contains('tc-serve-indicator') ||
+        e.target.classList.contains('srv-arrow') ||
+        e.target.classList.contains('srv-text')) return;
+
+    const t = e.changedTouches[0];
+    ts.tid = t.identifier;
+    ts.startY = t.clientY;
+    ts.startX = t.clientX;
+    ts.curY = t.clientY;
+    ts.curX = t.clientX;
+    ts.active = true;
+
+    // Move joystick base to touch point
+    joyBaseX = t.clientX;
+    joyBaseY = t.clientY;
+    if (outer) {
+      const size = outer.offsetWidth;
+      outer.style.position = 'absolute';
+      outer.style.left = (t.clientX - zone.getBoundingClientRect().left - size/2) + 'px';
+      outer.style.top  = (t.clientY - zone.getBoundingClientRect().top  - size/2) + 'px';
+      outer.style.bottom = 'auto';
+      outer.classList.add('active');
+    }
+    haptic('light');
+  }, { passive:false });
+
+  zone.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    if (!ts.active) return;
+    let touch = null;
+    for (let t of e.touches) { if (t.identifier === ts.tid) { touch = t; break; } }
+    if (!touch) return;
+
+    ts.curY = touch.clientY;
+    ts.curX = touch.clientX;
+    const dy = touch.clientY - ts.startY;
+    const dx = touch.clientX - ts.startX;
+    ts.dy = dy;
+    ts.spin = Math.sign(dx) * Math.min(Math.abs(dx) / (60 - sensitivity.spin * 4), 1.5);
+
+    // Move knob visually
+    const maxTravel = (outer ? outer.offsetWidth/2 : 55) * 0.75;
+    const dist = Math.sqrt(dx*dx + dy*dy);
+    const clampedDist = Math.min(dist, maxTravel);
+    const angle = Math.atan2(dy, dx);
+    const kx = Math.cos(angle) * clampedDist;
+    const ky = Math.sin(angle) * clampedDist;
+    const knobEl = document.getElementById(knobId);
+    if (knobEl) knobEl.style.transform = `translate(calc(-50% + ${kx}px), calc(-50% + ${ky}px))`;
+  }, { passive:false });
+
+  const endFn = (e) => {
+    e.preventDefault();
+    for (let t of e.changedTouches) {
+      if (t.identifier === ts.tid) {
+        ts.tid = null; ts.active = false; ts.dy = 0; ts.spin = 0;
+        const knobEl = document.getElementById(knobId);
+        if (knobEl) knobEl.style.transform = 'translate(-50%,-50%)';
+        if (outer) {
+          outer.classList.remove('active');
+          // Reset to bottom-left corner
+          if (player === 'p1') { outer.style.left='16px'; outer.style.top='auto'; outer.style.bottom='16px'; }
+          else { outer.style.right='16px'; outer.style.left='auto'; outer.style.top='auto'; outer.style.bottom='16px'; }
+        }
+        break;
+      }
+    }
+  };
+  zone.addEventListener('touchend', endFn, { passive:false });
+  zone.addEventListener('touchcancel', endFn, { passive:false });
+}
+
+// ── SWIPE UP TO SERVE ──
+function setupSwipeServe() {
+  const zone = document.getElementById('tc-serve-zone');
+  const indicator = document.getElementById('tc-serve-indicator');
+  if (!zone) return;
+
+  let serveStartY = 0, serveStartX = 0, serveTid = null;
+  const SWIPE_THRESHOLD = () => 40 - sensitivity.serve * 3; // 7px to 37px
+
+  zone.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    if (serveTid !== null) return;
+    const t = e.changedTouches[0];
+    serveTid = t.identifier;
+    serveStartY = t.clientY;
+    serveStartX = t.clientX;
+    if (indicator) indicator.style.opacity = '1';
+  }, { passive:false });
+
+  zone.addEventListener('touchmove', (e) => {
+    e.preventDefault();
+    if (serveTid === null) return;
+    let touch = null;
+    for (let t of e.touches) { if (t.identifier === serveTid) { touch = t; break; } }
+    if (!touch) return;
+
+    const dy = serveStartY - touch.clientY; // positive = swipe up
+    const progress = Math.min(dy / SWIPE_THRESHOLD(), 1);
+
+    // Show serve visual feedback
+    if (indicator) {
+      indicator.style.transform = `translateX(50%) translateY(${-dy*0.3}px)`;
+      indicator.style.borderColor = `rgba(212,184,0,${0.35 + progress*0.65})`;
+    }
+
+    // Trigger serve on sufficient upward swipe
+    if (dy > SWIPE_THRESHOLD() && !G.rallying) {
+      if (indicator) indicator.classList.add('served');
+      initAudio(); serve(); haptic('medium');
+      serveTid = null;
+      setTimeout(() => {
+        if (indicator) { indicator.classList.remove('served'); indicator.style.transform = 'translateX(50%)'; }
+      }, 300);
+    }
+  }, { passive:false });
+
+  zone.addEventListener('touchend', (e) => {
+    e.preventDefault();
+    for (let t of e.changedTouches) {
+      if (t.identifier === serveTid) {
+        serveTid = null;
+        if (indicator) { indicator.style.transform = 'translateX(50%)'; indicator.style.opacity = '0.7'; }
+        break;
+      }
+    }
+  }, { passive:false });
+}
+
+// ── SPLIT 2P CONTROLS ──
+function setupSplitControls() {
+  setupAdvancedJoystick('p1', 'tc-split-p1', 'tc-joy-sp1-knob');
+  setupAdvancedJoystick('p2', 'tc-split-p2', 'tc-joy-sp2-knob');
+}
+
+function onSplitServe(e, playerNum) {
+  e.preventDefault(); e.stopPropagation();
+  if (!G.rallying && G.serving === playerNum) { initAudio(); serve(); haptic('medium'); }
+}
+
+// ── PINCH TO ZOOM ──
+function setupPinchZoom() {
+  const canvas = document.getElementById('gameCanvas');
+  if (!canvas) return;
+
+  canvas.addEventListener('touchstart', (e) => {
+    if (e.touches.length === 2) {
+      e.preventDefault();
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      pinchState.startDist = Math.sqrt(dx*dx + dy*dy);
+      pinchState.baseScale = gameScale;
+      pinchState.active = true;
+    }
+  }, { passive:false });
+
+  canvas.addEventListener('touchmove', (e) => {
+    if (e.touches.length === 2 && pinchState.active) {
+      e.preventDefault();
+      const dx = e.touches[0].clientX - e.touches[1].clientX;
+      const dy = e.touches[0].clientY - e.touches[1].clientY;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      const ratio = dist / pinchState.startDist;
+      gameScale = Math.max(0.5, Math.min(2.0, pinchState.baseScale * ratio));
+      applyGameScale();
+      showZoomIndicator();
+    }
+  }, { passive:false });
+
+  canvas.addEventListener('touchend', (e) => {
+    if (e.touches.length < 2) pinchState.active = false;
+  }, { passive:false });
+}
+
+function applyGameScale() {
+  const canvas = document.getElementById('gameCanvas');
+  if (!canvas) return;
+  canvas.style.transform = `scale(${gameScale})`;
+  canvas.style.transformOrigin = 'center center';
+}
+
+let zoomTimer = null;
+function showZoomIndicator() {
+  const el = document.getElementById('zoom-indicator');
+  if (!el) return;
+  el.textContent = `🔍 ${Math.round(gameScale * 100)}%`;
+  el.style.opacity = '1';
+  clearTimeout(zoomTimer);
+  zoomTimer = setTimeout(() => { el.style.opacity = '0'; }, 1500);
+}
+
+// ── SENSITIVITY PANEL ──
+function openSensitivityPanel() {
+  const p = document.getElementById('sensitivity-panel');
+  if (!p) return;
+  // Only pause if game is actively running
+  if (gameActive && !gamePaused) togglePause();
+  p.style.display = 'block';
+}
+
+function closeSensitivityPanel() {
+  const p = document.getElementById('sensitivity-panel');
+  if (p) p.style.display = 'none';
+  updateSensitivity();
+  applyJoystickSize();
+  // Only resume if game was paused by this panel
+  if (gameActive && gamePaused) togglePause();
+}
+
+function updateSensitivity() {
+  // Read from whichever slider was changed (both sets share same IDs)
+  const moveEl  = document.getElementById('sens-move');
+  const spinEl  = document.getElementById('sens-spin');
+  const sizeEl  = document.getElementById('sens-size');
+  const serveEl = document.getElementById('sens-serve');
+  if (moveEl)  sensitivity.move  = parseInt(moveEl.value);
+  if (spinEl)  sensitivity.spin  = parseInt(spinEl.value);
+  if (sizeEl)  sensitivity.size  = parseInt(sizeEl.value);
+  if (serveEl) sensitivity.serve = parseInt(serveEl.value);
+  // Update all value labels
+  ['sens-move-val','sens-spin-val','sens-size-val','sens-serve-val'].forEach(id=>{
+    const el = document.getElementById(id);
+    if (el) {
+      const key = id.replace('sens-','').replace('-val','');
+      el.textContent = sensitivity[key] || 5;
+    }
+  });
+  applyJoystickSize();
+}
+
+// ── LOCAL 2-PHONE CONNECTION (via BroadcastChannel / localStorage polling) ──
+let lcRole = null; // 'host' | 'guest'
+let lcCode = '';
+let lcPollInterval = null;
+const LC_STORAGE_PREFIX = 'tc_local_';
+
+function openLocalConnect() {
+  document.getElementById('local-connect-overlay').style.display = 'flex';
+  document.getElementById('lc-choose').style.display = 'block';
+  document.getElementById('lc-hosting').style.display = 'none';
+  document.getElementById('lc-joining').style.display = 'none';
+}
+
+function closeLocalConnect() {
+  document.getElementById('local-connect-overlay').style.display = 'none';
+  cancelHosting(); cancelJoining();
+}
+
+function generateCode() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  return Array.from({length:4}, ()=>chars[Math.floor(Math.random()*chars.length)]).join('');
+}
+
+function startAsHost() {
+  lcRole = 'host';
+  lcCode = generateCode();
+  document.getElementById('lc-choose').style.display = 'none';
+  document.getElementById('lc-hosting').style.display = 'block';
+  document.getElementById('lc-host-code').textContent = lcCode;
+  document.getElementById('lc-host-status').textContent = '⏳ Waiting for Player 2...';
+
+  // Generate QR code (simple URL-based)
+  const gameUrl = window.location.href.split('?')[0] + '?join=' + lcCode;
+  generateQR(gameUrl);
+
+  // Write to localStorage so guest on same WiFi (same page) can find it
+  localStorage.setItem(LC_STORAGE_PREFIX + lcCode, JSON.stringify({
+    host: true, code: lcCode, ts: Date.now(), state: 'waiting'
+  }));
+
+  // Poll for guest joining
+  lcPollInterval = setInterval(() => {
+    const data = JSON.parse(localStorage.getItem(LC_STORAGE_PREFIX + lcCode) || '{}');
+    if (data.state === 'joined') {
+      clearInterval(lcPollInterval);
+      document.getElementById('lc-host-status').textContent = '✅ Player 2 Connected!';
+      haptic('double');
+      setTimeout(() => {
+        closeLocalConnect();
+        gameMode = '2p';
+        startGame(false);
+        showToast('🎾 P2 CONNECTED — LOCAL MATCH START!');
+      }, 1000);
+    }
+  }, 1000);
+}
+
+function showJoinScreen() {
+  document.getElementById('lc-choose').style.display = 'none';
+  document.getElementById('lc-joining').style.display = 'block';
+  document.getElementById('lc-join-status').textContent = '';
+  // Auto-fill code from URL if present
+  const urlCode = new URLSearchParams(window.location.search).get('join');
+  if (urlCode) document.getElementById('lc-join-input').value = urlCode.toUpperCase();
+}
+
+function joinGame() {
+  const code = document.getElementById('lc-join-input').value.toUpperCase().trim();
+  if (code.length !== 4) { document.getElementById('lc-join-status').textContent = '⚠ Enter 4-letter code'; return; }
+  const data = JSON.parse(localStorage.getItem(LC_STORAGE_PREFIX + code) || 'null');
+  if (!data || data.state !== 'waiting') {
+    document.getElementById('lc-join-status').textContent = '❌ Code not found — ask host to check';
+    return;
+  }
+  // Mark as joined
+  localStorage.setItem(LC_STORAGE_PREFIX + code, JSON.stringify({...data, state:'joined', ts:Date.now()}));
+  document.getElementById('lc-join-status').textContent = '✅ Joined! Starting match...';
+  lcRole = 'guest'; haptic('double');
+  setTimeout(() => {
+    closeLocalConnect();
+    gameMode = '2p';
+    startGame(false);
+    showToast('🎾 HOST CONNECTED — LOCAL MATCH START!');
+  }, 1000);
+}
+
+function cancelHosting() {
+  clearInterval(lcPollInterval);
+  if (lcCode) localStorage.removeItem(LC_STORAGE_PREFIX + lcCode);
+  lcCode = ''; lcRole = null;
+}
+
+function cancelJoining() {
+  lcRole = null;
+  document.getElementById('lc-joining').style.display = 'none';
+  document.getElementById('lc-choose').style.display = 'block';
+}
+
+function generateQR(text) {
+  // Simple QR using a free API
+  const canvas = document.getElementById('lc-qr-canvas');
+  const wrap = document.getElementById('lc-qr-wrap');
+  if (!canvas || !wrap) return;
+  const img = document.createElement('img');
+  img.src = `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${encodeURIComponent(text)}`;
+  img.style.cssText = 'width:150px;height:150px;border-radius:4px;';
+  img.alt = 'QR Code';
+  wrap.innerHTML = '';
+  wrap.appendChild(img);
+}
+
+// ── APPLY TOUCH INPUT TO GAME EACH FRAME ──
+function applyTouchInput(dt) {
+  if (!touchEnabled || !G.p1) return;
+  const moveSens = sensitivity.move / 5; // 0.2 to 2.0
+  const spinSens = sensitivity.spin / 5;
+  const spd = G.H * 0.012 * dt * moveSens;
+  const sa = 0.8 * dt * spinSens;
+
+  if (touchState.p1.active) {
+    const move = touchState.p1.dy * 0.18 * dt * moveSens;
+    G.p1.y += move;
+    G.p1.spin = touchState.p1.spin * sa;
+    G.p1.y = clamp(G.p1.y, getEffH(G.p1)/2, G.H - getEffH(G.p1)/2);
+  }
+
+  if (tcMode === 'split' && touchState.p2.active && G.mode === '2p') {
+    const move = touchState.p2.dy * 0.18 * dt * moveSens;
+    G.p2.y += move;
+    G.p2.spin = touchState.p2.spin * sa;
+    G.p2.y = clamp(G.p2.y, getEffH(G.p2)/2, G.H - getEffH(G.p2)/2);
+  }
 }
 
 function checkOrientation() {
   const isPortrait = window.innerHeight > window.innerWidth;
   const ph = document.getElementById('portrait-hint');
-  // Show portrait hint only if phone-sized and portrait during active game
   if (gameActive && isPortrait && window.innerWidth < 768) {
     ph.style.display = 'flex';
   } else {
     ph.style.display = 'none';
   }
-  positionJoysticks();
-}
-
-function positionJoysticks() {
-  // Reposition joy bases to stay in view after resize
-  const j1 = document.getElementById('tc-joy1-base');
-  if (j1) { j1.style.bottom = `${Math.max(60, window.innerHeight*0.12)}px`; }
 }
 
 function showTouchLayout() {
@@ -2893,186 +3477,31 @@ function showTouchLayout() {
   document.getElementById('tc-single-layout').style.display = isSplit ? 'none' : 'block';
   document.getElementById('tc-split-layout').style.display = isSplit ? 'block' : 'none';
   document.getElementById('touch-controls').style.display = 'block';
-  positionJoysticks();
+  document.getElementById('sens-btn').style.display = 'block';
+  applyJoystickSize();
+  checkOrientation();
 }
 
 function hideTouchLayout() {
   document.getElementById('touch-controls').style.display = 'none';
+  document.getElementById('sens-btn').style.display = 'none';
 }
 
-// ── JOYSTICK SETUP ──
-function setupJoystick(player, zoneId, knobId) {
-  const zone = document.getElementById(zoneId);
-  const knob = document.getElementById(knobId);
-  if (!zone || !knob) return;
-
-  function getBase() {
-    const base = zone.querySelector('.tc-joystick-base');
-    if (!base) return null;
-    return base.getBoundingClientRect();
-  }
-
-  function onTouchStart(e) {
-    e.preventDefault();
-    const ts = touchState[player];
-    if (ts.touchId !== null) return;
-    const t = e.changedTouches[0];
-    ts.touchId = t.identifier;
-    ts.startY = t.clientY;
-    ts.startX = t.clientX;
-    ts.active = true;
-  }
-
-  function onTouchMove(e) {
-    e.preventDefault();
-    const ts = touchState[player];
-    if (!ts.active) return;
-    let touch = null;
-    for (let t of e.touches) { if (t.identifier === ts.touchId) { touch = t; break; } }
-    if (!touch) return;
-
-    const dy = touch.clientY - ts.startY;
-    const dx = touch.clientX - ts.startX;
-
-    // Movement: vertical drag
-    ts.dy = dy;
-    // Spin: horizontal drag
-    ts.spin = Math.sign(dx) * Math.min(Math.abs(dx) / 50, 1.5);
-
-    // Animate knob
-    const clampedX = Math.max(-JOY_MAX, Math.min(JOY_MAX, dx));
-    const clampedY = Math.max(-JOY_MAX, Math.min(JOY_MAX, dy));
-    knob.style.transform = `translate(calc(-50% + ${clampedX}px), calc(-50% + ${clampedY}px))`;
-    joyPos[player] = { x: clampedX, y: clampedY };
-  }
-
-  function onTouchEnd(e) {
-    e.preventDefault();
-    const ts = touchState[player];
-    for (let t of e.changedTouches) {
-      if (t.identifier === ts.touchId) {
-        ts.touchId = null; ts.active = false; ts.dy = 0; ts.spin = 0;
-        knob.style.transform = 'translate(-50%,-50%)';
-        break;
-      }
-    }
-  }
-
-  zone.addEventListener('touchstart', onTouchStart, { passive:false });
-  zone.addEventListener('touchmove',  onTouchMove,  { passive:false });
-  zone.addEventListener('touchend',   onTouchEnd,   { passive:false });
-  zone.addEventListener('touchcancel',onTouchEnd,   { passive:false });
-}
-
-function setupServeButton(btnId, player) {
-  const btn = document.getElementById(btnId);
-  if (!btn) return;
-  btn.addEventListener('touchstart', (e) => {
-    e.preventDefault();
-    if (!gameActive || gamePaused) return;
-    initAudio();
-    if (!G.rallying) {
-      // Serving player depends on G.serving
-      serve();
-    }
-  }, { passive:false });
-}
-
-function setupSplitControls() {
-  // P1 split zone joystick
-  const p1zone = document.getElementById('tc-split-p1');
-  const p1knob = document.getElementById('tc-joy-split1-knob');
-  const p2zone = document.getElementById('tc-split-p2');
-  const p2knob = document.getElementById('tc-joy-split2-knob');
-
-  function makeSplitJoy(zone, knob, player) {
-    if (!zone || !knob) return;
-    let startY=0, startX=0, tid=null;
-    zone.addEventListener('touchstart',(e)=>{
-      e.preventDefault();
-      if(tid!==null)return;
-      const t=e.changedTouches[0];
-      // Don't capture serve button touches
-      if(e.target.classList.contains('tc-serve-btn'))return;
-      tid=t.identifier; startY=t.clientY; startX=t.clientX;
-      touchState[player].active=true; touchState[player].touchId=tid;
-    },{passive:false});
-    zone.addEventListener('touchmove',(e)=>{
-      e.preventDefault();
-      if(tid===null)return;
-      let touch=null;
-      for(let t of e.touches){if(t.identifier===tid){touch=t;break;}}
-      if(!touch)return;
-      const dy=touch.clientY-startY, dx=touch.clientX-startX;
-      touchState[player].dy=dy;
-      touchState[player].spin=Math.sign(dx)*Math.min(Math.abs(dx)/50,1.5);
-      const cy=Math.max(-JOY_MAX,Math.min(JOY_MAX,dy));
-      const cx=Math.max(-JOY_MAX,Math.min(JOY_MAX,dx));
-      knob.style.transform=`translate(calc(-50% + ${cx}px),calc(-50% + ${cy}px))`;
-    },{passive:false});
-    zone.addEventListener('touchend',(e)=>{
-      e.preventDefault();
-      for(let t of e.changedTouches){
-        if(t.identifier===tid){
-          tid=null; touchState[player].active=false; touchState[player].dy=0; touchState[player].spin=0;
-          knob.style.transform='translate(-50%,-50%)'; break;
-        }
-      }
-    },{passive:false});
-    zone.addEventListener('touchcancel',(e)=>{
-      tid=null; touchState[player].active=false; touchState[player].dy=0; touchState[player].spin=0;
-      knob.style.transform='translate(-50%,-50%)';
-    },{passive:false});
-  }
-
-  makeSplitJoy(p1zone, p1knob, 'p1');
-  makeSplitJoy(p2zone, p2knob, 'p2');
-
-  // Split serve buttons
-  const srv1 = document.getElementById('tc-serve-p1-btn');
-  const srv2 = document.getElementById('tc-serve-p2-btn');
-  if (srv1) srv1.addEventListener('touchstart',(e)=>{ e.preventDefault(); e.stopPropagation(); if(!G.rallying&&G.serving===1){initAudio();serve();} },{passive:false});
-  if (srv2) srv2.addEventListener('touchstart',(e)=>{ e.preventDefault(); e.stopPropagation(); if(!G.rallying&&G.serving===2){initAudio();serve();} },{passive:false});
-}
-
-// ── INJECT TOUCH INTO handleInput ──
-// Called each frame to apply touch state to game state
-function applyTouchInput(dt) {
-  if (!touchEnabled || !G.p1) return;
-  const spd = G.H * 0.012 * dt;
-  const sa = 0.8 * dt;
-
-  // P1 touch movement
-  if (touchState.p1.active) {
-    const sensitivity = 0.18; // dy pixels per frame → movement
-    const move = touchState.p1.dy * sensitivity * dt;
-    G.p1.y += move;
-    G.p1.spin = touchState.p1.spin * sa;
-    const p1h = getEffH(G.p1);
-    G.p1.y = clamp(G.p1.y, p1h/2, G.H - p1h/2);
-  }
-
-  // P2 touch movement (split 2P only)
-  if (tcMode === 'split' && touchState.p2.active && G.mode === '2p') {
-    const move = touchState.p2.dy * 0.18 * dt;
-    G.p2.y += move;
-    G.p2.spin = touchState.p2.spin * sa;
-    const p2h = getEffH(G.p2);
-    G.p2.y = clamp(G.p2.y, p2h/2, G.H - p2h/2);
-  }
-}
-
-// Prevent default scroll/zoom on touch for game canvas
-document.addEventListener('touchmove', (e) => {
-  if (gameActive) e.preventDefault();
-}, { passive: false });
-
+// Prevent scroll/zoom during game
+document.addEventListener('touchmove', (e) => { if (gameActive) e.preventDefault(); }, { passive:false });
 document.addEventListener('touchstart', (e) => {
   if (gameActive && e.target === document.getElementById('gameCanvas')) {
-    e.preventDefault();
-    initAudio();
+    e.preventDefault(); initAudio();
   }
-}, { passive: false });
+}, { passive:false });
+
+// Auto-open join if URL has ?join= code
+window.addEventListener('load', () => {
+  const urlCode = new URLSearchParams(window.location.search).get('join');
+  if (urlCode && isTouchDevice()) {
+    setTimeout(() => { openLocalConnect(); showJoinScreen(); }, 1500);
+  }
+});
 (async()=>{
   await loadCareer();
   await loadDailyState();
